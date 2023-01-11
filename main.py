@@ -1,3 +1,4 @@
+import cv2
 import numpy as np
 
 from PyQt5.QtWidgets import QMainWindow, QApplication, QHBoxLayout, QPushButton, QVBoxLayout, QWidget, QGraphicsView, \
@@ -115,14 +116,24 @@ class MainWindow(QMainWindow):
     def __convertOpencv(self):
         items = self.__view.items()
         if len(items) > 0:
+            # get the QImage out of QGraphicsItem
             item = items[0]
             p = item.pixmap()
             img = p.toImage()
+
+            # convert into numpy array
             rect = QRect(img.rect())
             ptr = img.bits()
             ptr.setsize(rect.width() * rect.height() * 4)
-            img_data = np.frombuffer(ptr, np.uint8).reshape(rect.height(), rect.width(), 4)
-            print(np.sum(img_data))
+            img = np.array(ptr, np.uint8).reshape(rect.height(), rect.width(), 4)
+
+            rows, cols = img.shape[:2]
+            M = cv2.getRotationMatrix2D((cols / 2, rows / 2), 180, 1)
+            dst = cv2.warpAffine(img, M, (cols, rows))
+
+            cv2.imshow('YY', dst)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
 
 
 
