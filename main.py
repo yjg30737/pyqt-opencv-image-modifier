@@ -46,6 +46,8 @@ class MainWindow(QMainWindow):
         self.__initUi()
 
     def __initUi(self):
+        self.setWindowTitle('OpenCV with PyQt')
+
         openBtn = QPushButton('Open')
         openBtn.clicked.connect(self.__open)
 
