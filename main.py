@@ -1,7 +1,9 @@
-from PyQt5.QtWidgets import QMainWindow, QApplication, QHBoxLayout, QPushButton, QVBoxLayout, QWidget, QGraphicsView, \
-    QFileDialog
+import numpy as np
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QMainWindow, QApplication, QHBoxLayout, QPushButton, QVBoxLayout, QWidget, QGraphicsView, \
+    QFileDialog, QGraphicsItem
+
+from PyQt5.QtCore import Qt, QRectF, QRect
 from PyQt5.QtGui import QPixmap, QPainter, QTransform
 from PyQt5.QtWidgets import QGraphicsScene, QGraphicsView
 
@@ -49,19 +51,23 @@ class MainWindow(QMainWindow):
         self.__hBtn = QPushButton('FlipH')
         self.__vBtn = QPushButton('FlipV')
         self.__dBtn = QPushButton('FlipD')
+        self.__sBtn = QPushButton('Symmetrize')
 
         self.__hBtn.setEnabled(False)
         self.__vBtn.setEnabled(False)
         self.__dBtn.setEnabled(False)
+        self.__sBtn.setEnabled(False)
 
         self.__hBtn.clicked.connect(self.__transformH)
         self.__vBtn.clicked.connect(self.__transformV)
         self.__dBtn.clicked.connect(self.__transformD)
+        self.__sBtn.clicked.connect(self.__convertOpencv)
 
         lay = QHBoxLayout()
         lay.addWidget(self.__hBtn)
         lay.addWidget(self.__vBtn)
         lay.addWidget(self.__dBtn)
+        lay.addWidget(self.__sBtn)
         lay.setContentsMargins(0, 0, 0, 0)
         toolWidget = QWidget()
         toolWidget.setLayout(lay)
@@ -89,6 +95,7 @@ class MainWindow(QMainWindow):
             self.__hBtn.setEnabled(True)
             self.__vBtn.setEnabled(True)
             self.__dBtn.setEnabled(True)
+            self.__sBtn.setEnabled(True)
 
     def __transformH(self):
         transform = self.__view.transform()
@@ -104,6 +111,20 @@ class MainWindow(QMainWindow):
         transform = self.__view.transform()
         transform.rotate(180)
         self.__view.setTransform(transform)
+
+    def __convertOpencv(self):
+        items = self.__view.items()
+        if len(items) > 0:
+            item = items[0]
+            p = item.pixmap()
+            img = p.toImage()
+            rect = QRect(img.rect())
+            ptr = img.bits()
+            ptr.setsize(rect.width() * rect.height() * 4)
+            img_data = np.frombuffer(ptr, np.uint8).reshape(rect.height(), rect.width(), 4)
+            print(np.sum(img_data))
+
+
 
 
 if __name__ == "__main__":
